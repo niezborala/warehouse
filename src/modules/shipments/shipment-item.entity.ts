@@ -22,8 +22,8 @@ export class ShipmentItem {
     @Column({
         nullable: false
     })
-    quantity: number; 
-    
+    quantity: number;
+
     @ManyToOne(() => Product, product => product.shipmentItems)
     product: Product;
 
