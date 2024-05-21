@@ -4,6 +4,7 @@ import { ProductsController } from "./products.controller";
 import { ProductsService } from './products.service';
 import { Product } from './product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 describe('ProductsController', () => {
     let productsController: ProductsController;
@@ -78,8 +79,8 @@ describe('ProductsController', () => {
 
     describe('updateProduct', () => {
         it('should update a product', async () => {
-            const updateProductDto = { name: 'Test Product Updated' } as CreateProductDto;
-            const expectedProduct = { id: '1', name: 'Test Product Updated' } as Product;
+            const updateProductDto = { quantity: 100 } as UpdateProductDto;
+            const expectedProduct = { id: '1', quantity: 100 } as Product;
 
             jest.spyOn(productsService, 'getProduct').mockResolvedValue(expectedProduct);
             jest.spyOn(productsService, 'updateProduct').mockResolvedValue(expectedProduct);
@@ -92,7 +93,7 @@ describe('ProductsController', () => {
         it('should throw an error if product is not found', async () => {
             jest.spyOn(productsService, 'getProduct').mockResolvedValue(null);
 
-            await expect(productsController.updateProduct('1', {} as CreateProductDto)).rejects.toThrowError();
+            await expect(productsController.updateProduct('1', {} as UpdateProductDto)).rejects.toThrowError();
         });
     });
 
@@ -115,7 +116,6 @@ describe('ProductsController', () => {
         });
     });
 });
-
 
 function paginateHelper(items) {
     return {
