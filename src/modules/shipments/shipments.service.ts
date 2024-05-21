@@ -27,9 +27,24 @@ export class ShipmentsService {
             throw new BadRequestException('Invalid product id');
         }
 
-        // TODO: check if all products quantity is available
+        const areProductsAvailable = this.checkIfProductsAreAvailable(
+            products,
+            createShipmentDto.items
+        );
+
+        if (!areProductsAvailable) {
+            throw new BadRequestException('Quantity of products is not enough');
+        }
 
         const items = await this.shipmentItemRepository.save(createShipmentDto.items);
+
+        products.forEach(product => {
+            const item = createShipmentDto.items.find(item => item.productId === product.id);
+
+            product.quantity -= item.quantity;
+        });
+
+        await this.productsService.updateProducts(products);
 
         return this.shipmentRepository.save({
             ...createShipmentDto,
@@ -55,6 +70,15 @@ export class ShipmentsService {
     }
 
     async updateShipment(shipmentId: string, updateShipmentDto: UpdateShipmentDto): Promise<Shipment> {
+        const currentShipment = await this.shipmentRepository.findOne({
+            where: {
+                id: shipmentId
+            },
+            relations: ['items']
+        });
+        const currentProducts = await this.productsService
+            .getProductsByIds(currentShipment.items.map(item => item.product.id));
+
         const products = await this.productsService
             .getProductsByIds(updateShipmentDto.items.map(item => item.productId));
 
@@ -62,9 +86,38 @@ export class ShipmentsService {
             throw new BadRequestException('Invalid product id');
         }
 
-        // TODO: check if all products are available
+        // Return the quantity of products to the previous state
+        currentProducts.forEach(product => {
+            const item = currentShipment.items.find(item => item.product.id === product.id);
+
+            product.quantity += item.quantity;
+        });
+
+        const areProductsAvailable = this.checkIfProductsAreAvailable(
+            products,
+            updateShipmentDto.items
+        );
+
+        if (!areProductsAvailable) {
+            // Return the quantity of products to the previous state if the quantity of products is not enough
+            currentProducts.forEach(product => {
+                const item = currentShipment.items.find(item => item.product.id === product.id);
+
+                product.quantity -= item.quantity;
+            });
+
+            throw new BadRequestException('Quantity of products is not enough');
+        }
 
         const items = await this.shipmentItemRepository.save(updateShipmentDto.items);
+
+        products.forEach(product => {
+            const item = updateShipmentDto.items.find(item => item.productId === product.id);
+
+            product.quantity -= item.quantity;
+        });
+
+        await this.productsService.updateProducts(products);
 
         await this.shipmentRepository.update({
             id: shipmentId
@@ -84,6 +137,21 @@ export class ShipmentsService {
     async deleteShipment(shipmentId: string): Promise<void> {
         this.shipmentRepository.delete({
             id: shipmentId
+        });
+    }
+
+    checkIfProductsAreAvailable(products: Product[], items: {
+        productId: string;
+        quantity: number;
+    }[]): boolean {
+        if (products.length !== items.length) {
+            return false;
+        }
+
+        return products.every(product => {
+            const item = items.find(item => item.productId === product.id);
+
+            return product.quantity >= item.quantity;
         });
     }
 }

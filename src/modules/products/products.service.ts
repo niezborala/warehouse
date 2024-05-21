@@ -49,6 +49,16 @@ export class ProductsService {
         });
     }
 
+    async updateProducts(products: Product[]): Promise<Product[]> {
+        await this.productRepository.save(products);
+
+        return this.productRepository.find({
+            where: {
+                id: In(products.map(product => product.id))
+            }
+        });
+    }
+
     async deleteProduct(productId: string): Promise<void> {
         this.productRepository.delete({
             id: productId
