@@ -54,6 +54,22 @@ describe('ProductsService', () => {
         });
     });
 
+    describe('getProductsByIds', () => {
+        it('should return products by ids', async () => {
+            const productIds = ['1', '2'];
+            const expectedProducts = [
+                { id: '1', name: 'Test Product 1' },
+                { id: '2', name: 'Test Product 2' },
+            ] as Product[];
+
+            jest.spyOn(repository, 'find').mockResolvedValue(expectedProducts as Product[]);
+
+            const result = await service.getProductsByIds(productIds);
+
+            expect(result).toEqual(expectedProducts);
+        });
+    });
+
     describe('updateProduct', () => {
         it('should update a product', async () => {
             const productId = '1';

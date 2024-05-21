@@ -3,6 +3,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './products/product.entity';
 import { ProductsModule } from './products/products.module';
+import { ShipmentsModule } from './shipments/shipments.module';
+import { Shipment } from './shipments/shipment.entity';
+import { ShipmentItem } from './shipments/shipment-item.entity';
 
 @Module({
     imports: [
@@ -15,10 +18,13 @@ import { ProductsModule } from './products/products.module';
             database: process.env.DB_NAME,
             entities: [
                 Product,
+                Shipment,
+                ShipmentItem,
             ],
             synchronize: process.env.NODE_ENV === 'development',
         }),
         ProductsModule,
+        ShipmentsModule,
     ],
 })
 export class AppModule {

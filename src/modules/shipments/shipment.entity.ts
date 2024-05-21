@@ -3,15 +3,17 @@ import {
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
+    JoinTable,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { ShipmentItem } from '../shipments/shipment-item.entity';
+import { ShipmentsStatus } from './shipments.interfaces';
+import { ShipmentItem } from './shipment-item.entity';
 
 @Entity()
-export class Product {
-    constructor(partial?: Partial<Product>) {
+export class Shipment {
+    constructor(partial?: Partial<Shipment>) {
         Object.assign(this, partial);
     }
 
@@ -21,22 +23,21 @@ export class Product {
     @Column({
         nullable: false
     })
-    name: string;
+    companyName: string;
+
+    @Column({
+        nullable: false
+    })
+    scheduledDate: Date;
 
     @Column({
         nullable: false,
-        default: 0
+        default: ShipmentsStatus.CREATED
     })
-    price: number;
+    status: ShipmentsStatus;
 
-    @Column({
-        nullable: false,
-        default: 0
-    })
-    quantity: number;
-
-    @OneToMany(() => ShipmentItem, item => item.product)
-    shipmentItems: ShipmentItem[];
+    @OneToMany(() => ShipmentItem, item => item.shipment)
+    items: ShipmentItem[];
 
     @CreateDateColumn()
     createdAt: Date;

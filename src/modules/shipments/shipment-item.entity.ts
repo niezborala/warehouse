@@ -3,15 +3,16 @@ import {
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
-    OneToMany,
+    ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { ShipmentItem } from '../shipments/shipment-item.entity';
+import { Product } from '../products/product.entity';
+import { Shipment } from './shipment.entity';
 
 @Entity()
-export class Product {
-    constructor(partial?: Partial<Product>) {
+export class ShipmentItem {
+    constructor(partial?: Partial<ShipmentItem>) {
         Object.assign(this, partial);
     }
 
@@ -21,22 +22,13 @@ export class Product {
     @Column({
         nullable: false
     })
-    name: string;
+    quantity: number; 
+    
+    @ManyToOne(() => Product, product => product.shipmentItems)
+    product: Product;
 
-    @Column({
-        nullable: false,
-        default: 0
-    })
-    price: number;
-
-    @Column({
-        nullable: false,
-        default: 0
-    })
-    quantity: number;
-
-    @OneToMany(() => ShipmentItem, item => item.product)
-    shipmentItems: ShipmentItem[];
+    @ManyToOne(() => Shipment, shipment => shipment.items)
+    shipment: Shipment;
 
     @CreateDateColumn()
     createdAt: Date;
