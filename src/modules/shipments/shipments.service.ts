@@ -36,7 +36,10 @@ export class ShipmentsService {
             throw new BadRequestException('Quantity of products is not enough');
         }
 
-        const items = await this.shipmentItemRepository.save(createShipmentDto.items);
+        const items = await this.shipmentItemRepository.save(createShipmentDto.items.map(item => ({
+            ...item,
+            product: products.find(product => product.id === item.productId)
+        })));
 
         products.forEach(product => {
             const item = createShipmentDto.items.find(item => item.productId === product.id);
@@ -65,7 +68,7 @@ export class ShipmentsService {
             where: {
                 id: shipmentId
             },
-            relations: ['items']
+            relations: ['items', 'items.product']
         });
     }
 
@@ -74,7 +77,7 @@ export class ShipmentsService {
             where: {
                 id: shipmentId
             },
-            relations: ['items']
+            relations: ['items', 'items.product']
         });
         const currentProducts = await this.productsService
             .getProductsByIds(currentShipment.items.map(item => item.product.id));
